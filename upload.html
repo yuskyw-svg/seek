@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEEK - プレイヤー登録</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"Yu Gothic UI","Meiryo",sans-serif;
+}
+
+body{
+    background:#111;
+    color:#eee;
+    line-height:1.8;
+}
+
+.container{
+    max-width:600px; /* フォーム用に少しスリムに設定 */
+    margin:40px auto;
+    padding:30px;
+    background:#1c1c1c;
+    border-radius:10px;
+    box-shadow:0 0 20px rgba(0,0,0,.5);
+}
+
+h1{
+    text-align:center;
+    margin-bottom:20px;
+    color:#fff;
+}
+
+.description{
+    text-align:center;
+    margin-bottom:30px;
+    color:#ccc;
+    font-size:15px;
+}
+
+.form-group{
+    margin-bottom:25px;
+}
+
+label{
+    display:block;
+    margin-bottom:8px;
+    font-size:16px;
+    color:#6db8ff;
+    border-left:4px solid #6db8ff;
+    padding-left:8px;
+}
+
+input[type="text"],
+input[type="email"]{
+    width:100%;
+    padding:12px;
+    font-size:16px;
+    background:#2a2a2a;
+    border:1px solid #444;
+    border-radius:6px;
+    color:#fff;
+    transition:border-color .2s;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus{
+    outline:none;
+    border-color:#6db8ff;
+}
+
+.btn-area{
+    margin-top:40px;
+    text-align:center;
+}
+
+button{
+    background:#2b82ff;
+    color:white;
+    border:none;
+    padding:15px 50px;
+    font-size:18px;
+    border-radius:8px;
+    cursor:pointer;
+    transition:.2s;
+    width:100%;
+    max-width:300px;
+}
+
+button:hover{
+    background:#529bff;
+}
+
+button:disabled{
+    background:#555;
+    cursor:not-allowed;
+}
+
+.message{
+    text-align:center;
+    margin-top:20px;
+    font-weight:bold;
+    font-size:15px;
+}
+
+.msg-error{
+    color:#ff5252;
+}
+
+.footer{
+    margin-top:40px;
+    text-align:center;
+    color:#888;
+    font-size:14px;
+}
+
+/* 画面切り替え用の非表示クラス */
+.hidden{
+    display:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container" id="form-container">
+    <h1>SEEK プレイヤー登録</h1>
+    <p class="description">
+        ゲーム開始に必要な情報を入力してください。<br>
+        登録後、入力されたメールアドレスへパスワードが送信されます。
+    </p>
+
+    <form id="register-form">
+        <div class="form-group">
+            <label for="name">プレイヤー名（ニックネーム可）</label>
+            <input type="text" id="name" required placeholder="例：tsubaki">
+        </div>
+
+        <div class="form-group">
+            <label for="email">メールアドレス</label>
+            <input type="email" id="email" required placeholder="例：seek@example.com">
+        </div>
+
+        <div class="btn-area">
+            <button type="submit" id="submit-btn">送信してゲームを開始する</button>
+        </div>
+    </form>
+    
+    <div id="msg" class="message"></div>
+
+    <div class="footer">
+        SEEK © tsubaki
+    </div>
+</div>
+
+<div class="container hidden" id="complete-container">
+    <h1>登録が完了しました！</h1>
+    <p class="description" style="font-size:16px; color:#6db8ff; font-weight:bold; margin-top:20px;">
+        【SEEK】ゲーム開始パスワード をメールで送信しました。
+    </p>
+    <p class="description" style="text-align:left; max-width:450px; margin:20px auto; line-height:2;">
+        入力されたメールアドレスの受信トレイを確認し、記載されているパスワードを <strong>Viewer.exe</strong> へ入力してゲームを開始してください。<br>
+        <span style="font-size:13px; color:#888;">※メールが届かない場合は、迷惑メールフォルダ等をご確認ください。</span>
+    </p>
+    <div class="footer">
+        SEEK © tsubaki
+    </div>
+</div>
+
+<script>
+// 提供されたGASのWebアプリURL
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxIb0RUxEvxpZXoPxUmThW3gSTHPXZ4z4IvqMmtnrcEO612xLoA_gL68uesSQwGaTIE/exec";
+
+const form = document.getElementById("register-form");
+const submitBtn = document.getElementById("submit-btn");
+const msg = document.getElementById("msg");
+const formContainer = document.getElementById("form-container");
+const completeContainer = document.getElementById("complete-container");
+
+form.addEventListener("submit", async (e) => {
+    e.preventDefault(); // 通常のページ遷移を防止
+    
+    // 連打・二重送信防止のためボタンを無効化
+    submitBtn.disabled = true;
+    msg.textContent = "送信中...";
+    msg.className = "message";
+
+    const name = document.getElementById("name").value;
+    const email = document.getElementById("email").value;
+
+    const payload = {
+        name: name,
+        email: email
+    };
+
+    try {
+        // GAS側で JSON.parse(e.postData.contents) を行うため、
+        // Content-Type をあえて 'text/plain' にしてCORSのプリフライト(OPTIONS)エラーを回避します
+        const response = await fetch(GAS_URL, {
+            method: "POST",
+            mode: "cors",
+            headers: {
+                "Content-Type": "text/plain"
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            throw new Error("ネットワークエラーが発生しました。");
+        }
+
+        const result = await response.json();
+
+        if (result.success) {
+            // 送信成功：入力画面を隠して完了画面を表示
+            formContainer.classList.add("hidden");
+            completeContainer.classList.remove("hidden");
+        } else {
+            throw new Error("サーバー側でエラーが発生しました。");
+        }
+
+    } catch (error) {
+        console.error(error);
+        msg.textContent = "送信に失敗しました。通信環境が良い場所で再度お試しください。";
+        msg.className = "message msg-error";
+        submitBtn.disabled = false; // 失敗時はボタンを元に戻す
+    }
+});
+</script>
+
+</body>
+</html>
