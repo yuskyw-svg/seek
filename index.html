@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
@@ -287,8 +287,9 @@ check.addEventListener("change",()=>{
     btn.disabled=!check.checked;
 });
 
-btn.addEventListener("click",()=>{
-    alert("利用規約に同意しました。");
+btn.addEventListener("click", () => {
+    location.href = "register.html";
+});
     // ここでメールアドレス入力画面へ遷移させる
     // location.href="mail.html";
 });
@@ -296,4 +297,3 @@ btn.addEventListener("click",()=>{
 
 </body>
 </html>
-```
